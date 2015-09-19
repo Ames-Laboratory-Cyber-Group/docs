@@ -75,8 +75,10 @@ A message header has the following fields:
    * Payload Length: 2 bytes => Length, in bytes, of the message payload
 
 
+
 | Type | Payload Length |
 | ---- | -------------- |
+| 1 byte | 2 bytes |
 
 The following types of message payloads are currently used:
 
