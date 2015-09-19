@@ -57,6 +57,7 @@ The format of a test case file is:
 * Tasks, TaskNum times
    * TestID => UUID
    * Action => push/pull (exactly one push allowed per test case)
+   * Delay => how long, in seconds, a test runner should wait before starting this task
    * Site => site that should run this test (exactly 1 pull allowed per site)
    * Input => task input
    * Expected response code => e.g. 200 OK
@@ -178,13 +179,13 @@ Some useful functions:
 fn RunTask (task t):
     => Send a RunTask message to the specified site
         => If the response is a RunningTask message:
-            => Wait for a Result message
+            => Wait for RESPONSE_MAX + Delay seconds for a Result message
         => If the response is a SendTask message:
             => Serialize the task and send to the test runner
                 => If the response is an Error message:
                     => Mark the task as failed due to an internal testing error
             => If the response is a RunningTask message:
-                => Wait for a Result message
+                => Wait for RESPONSE_MAX + Delay seconds for a Result message
             => If there is no response in TIMEOUT seconds, mark the node
                as down
         => If the response is an Error message:
@@ -194,8 +195,9 @@ fn RunTask (task t):
 
 
 fn RunnerTask (task t):
-    => Store the current timestamp
     => Send a RunningTask message to the controller
+    => Wait Delay seconds
+    => Store the current timestamp
     => Execute the task
     => Store the timestamp when the task finishes
     => Send a Result message to the controller
@@ -213,7 +215,7 @@ Phase 1 (Availability):
     => For each push task *t* in each availability test:
         => execute RunTask(t)
     => Wait for all availability push tasks to complete:
-        => If RESPONSE_MAX seconds pass without a received Result message,
+        => If RESPONSE_MAX + Delay seconds pass without a received Result message,
            mark the task as a failure and mark the node as down
     => When a Result message is received:
         => Record the result
@@ -226,7 +228,7 @@ Phase 1 (Availability):
                     => Mark the task as failed due to an internal testing error
                 => If the task fails (Result failure received):
                     => Mark the node as down and record the failure
-            => If there is no response in RESPONSEMAX seconds, mark the
+            => If there is no response in RESPONSEMAX + Delay seconds, mark the
                node as down and record the failure
             => If success Result is received, record result
 
@@ -236,7 +238,7 @@ Phase 2:
     => For all remaining test cases:
         => For all push tasks t:
             => Execute RunTask(t)
-            => If RESPONSEMAX seconds pass without a response:
+            => If RESPONSEMAX + Delay seconds pass without a response:
                 => Mark the task as failed
                 => Cancel all pull tasks for this test case
                 => Ignore any Result messages for this task
@@ -246,7 +248,7 @@ Phase 2:
                    in the test case
                     => For each pull task result:
                         => Record result
-                => If RESPONSEMAX seconds pass without a Result message for
+                => If RESPONSEMAX + Delay seconds pass without a Result message for
                    a given pull task:
                     => Mark the task as a failure
                     => Ignore any later Result message for this task
@@ -273,7 +275,6 @@ message for some task *t*:
 ```
 => Store 'Delay' seconds from RunTask message
 => If there is a cached copy of t
-    => Wait for 'Delay' seconds
     => Execute RunnerTask(t)
 => If there is no cached copy of t
     => Send a SendTask message to the controller
@@ -283,7 +284,6 @@ message for some task *t*:
                the pending task
         => If task parses correctly:
             => Cache t
-            => Wait for 'Delay' seconds
             => Execute RunnerTask(t)
     => If any other message is received:
         => Discard the pending task and any associated state
