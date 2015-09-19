@@ -81,11 +81,11 @@ The following types of messages are currently used:
 Sent by: Controller
 Purpose: Signal a test runner to run a particular task
 Format:
-    * TaskID: 32 bytes => UUID of the task to run
-    * Timestamp: 8 bytes => the "new since" time to request data from server
-                            (zeroed and ignored in push tasks)
-    * Delay: 2 bytes => how long, in seconds, to wait before running test
-                        (can be zero)
+   * TaskID: 32 bytes => UUID of the task to run
+   * Timestamp: 8 bytes => the "new since" time to request data from server
+                           (zeroed and ignored in push tasks)
+   * Delay: 2 bytes => how long, in seconds, to wait before running test
+                       (can be zero)
 
 ### RunningTask Message
 
@@ -100,7 +100,7 @@ Sent by: TestRunner
 Purpose: Tell controller that test runner does not know about the
          requested task and the controller should send the task data.
 Format:
-    * TaskID: 32 bytes => UUID of the test being run
+   * TaskID: 32 bytes => UUID of the test being run
 
 ### TaskData
 
@@ -108,18 +108,18 @@ Sent by: Controller
 Purpose: Tell a test runner that doesn't know about this task yet what
          the task actually is
 Format:
-    * TaskID: 32 bytes => UUID of the task being run
-    * TaskData: N bytes => Serialized Task
+   * TaskID: 32 bytes => UUID of the task being run
+   * TaskData: N bytes => Serialized Task
 
 ### Result
 
 Sent by: TestRunner
 Purpose: Tell controller the results of a task
 Format:
-    * TaskID: 32 bytes => UUID of the task being run
-    * StartTime: 8 bytes => timestamp when task run began
-    * EndTime: 8 bytes => timestamp when task run finished
-    * ResultData: M bytes => Serialized Result
+   * TaskID: 32 bytes => UUID of the task being run
+   * StartTime: 8 bytes => timestamp when task run began
+   * EndTime: 8 bytes => timestamp when task run finished
+   * ResultData: M bytes => Serialized Result
 
 ### Error
 
@@ -129,11 +129,11 @@ Purpose: Tell controller that a test runner had some sort of internal
          read a file due to bad permissions, received a malformed/unparseable
          message, etc.)
 Format:
-    * TaskID: 32 bytes => Task the test runner was trying to execute when
-                          the error occured
-    * Error code: 1 byte => Protocol error code
-    * Message: Y bytes => human-readable string containing additional
-                          info about the error (e.g. string from an exception)
+   * TaskID: 32 bytes => Task the test runner was trying to execute when
+                         the error occured
+   * Error code: 1 byte => Protocol error code
+   * Message: Y bytes => human-readable string containing additional
+                         info about the error (e.g. string from an exception)
 
 
 ## Detailed Protocol Description
@@ -170,27 +170,27 @@ Definitions:
       * Discard the task
 
 **Controller**:
-    * Read all test case files
-    * For every test case of type Availability:
-       * For each push task *t* in each availability test:
-          * execute RunTask(t)
-       * **Wait** for all availability push tasks to complete:
-          * If RESPONSE_MAX seconds pass without a received Result message,
-            mark the task as a failure and mark the node as down
-          * When a Result message is received:
-             * Record the result
-             * If the result is a failure:
-                * mark the node as down
-       * For all pull tasks t:
-          * For all available sites:
-             * execute RunTask(t)
-                * If an Error is received:
-                   * mark the task as failed due to an internal testing error
-                * If the task fails:
-                   * mark the node as down and record the failure
-                * If there is no response in RESPONSEMAX seconds, mark the
-                  node as down and record the failure
-                * If success is received, record result
+   * Read all test case files
+   * For every test case of type Availability:
+      * For each push task *t* in each availability test:
+         * execute RunTask(t)
+      * **Wait** for all availability push tasks to complete:
+         * If RESPONSE_MAX seconds pass without a received Result message,
+           mark the task as a failure and mark the node as down
+         * When a Result message is received:
+            * Record the result
+            * If the result is a failure:
+               * mark the node as down
+      * For all pull tasks t:
+         * For all available sites:
+            * execute RunTask(t)
+               * If an Error is received:
+                  * mark the task as failed due to an internal testing error
+               * If the task fails:
+                  * mark the node as down and record the failure
+               * If there is no response in RESPONSEMAX seconds, mark the
+                 node as down and record the failure
+               * If success is received, record result
    * For all available sites:
       * For all remaining test cases:
          * For all push tasks t:
