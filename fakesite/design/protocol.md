@@ -71,22 +71,19 @@ a header and a payload.
 ### Header Format
 
 A message header has the following fields:
-   * Type: 1 byte => identifies the type of message this is
-   * Payload Length: 2 bytes => Length, in bytes, of the message payload
 
 
+| `Type` | `TaskID` | `Payload Length` |
+| :----: | :------:   :--------------: |
+| 1 byte | 2 bytes |  32 bytes |
 
-| Type | Payload Length |
-| ---- | -------------- |
-| 1 byte | 2 bytes |
+Where `Type` specifies the payload type and can be any of the following:
 
-The following types of message payloads are currently used:
+#### RunTask Message
 
-### RunTask Message
-
-Sent by: Controller  
-Purpose: Signal a test runner to run a particular task  
-Format:  
+**Sent by**: Controller  
+**Purpose**: Signal a test runner to run a particular task  
+**Format**:  
 
    * TaskID: 32 bytes => UUID of the task to run
    * Timestamp: 8 bytes => the "new since" time to request data from server
