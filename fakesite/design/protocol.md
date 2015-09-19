@@ -74,13 +74,14 @@ A message header has the following fields:
    * Type: 1 byte => identifies the type of message this is
    * Payload Length: 2 bytes => Length, in bytes, of the message payload
 
-The following types of messages are currently used:
+The following types of message payloads are currently used:
 
 ### RunTask Message
 
-Sent by: Controller
-Purpose: Signal a test runner to run a particular task
-Format:
+Sent by: Controller  
+Purpose: Signal a test runner to run a particular task  
+Format:  
+
    * TaskID: 32 bytes => UUID of the task to run
    * Timestamp: 8 bytes => the "new since" time to request data from server
                            (zeroed and ignored in push tasks)
@@ -89,33 +90,37 @@ Format:
 
 ### RunningTask Message
 
-Sent by: TestRunner
-Purpose: Tell controller that a particular task is being run
-Format:
+Sent by: TestRunner  
+Purpose: Tell controller that a particular task is being run  
+Format:  
+
    * TaskID: 32 bytes => UUID of the task being run
 
-#### SendTask Message
+### SendTask Message
 
-Sent by: TestRunner
+Sent by: TestRunner  
 Purpose: Tell controller that test runner does not know about the
-         requested task and the controller should send the task data.
-Format:
+         requested task and the controller should send the task data.  
+Format:  
+
    * TaskID: 32 bytes => UUID of the test being run
 
 ### TaskData
 
-Sent by: Controller
+Sent by: Controller  
 Purpose: Tell a test runner that doesn't know about this task yet what
-         the task actually is
-Format:
+         the task actually is  
+Format:  
+
    * TaskID: 32 bytes => UUID of the task being run
    * TaskData: N bytes => Serialized Task
 
 ### Result
 
-Sent by: TestRunner
-Purpose: Tell controller the results of a task
-Format:
+Sent by: TestRunner  
+Purpose: Tell controller the results of a task  
+Format:  
+
    * TaskID: 32 bytes => UUID of the task being run
    * StartTime: 8 bytes => timestamp when task run began
    * EndTime: 8 bytes => timestamp when task run finished
@@ -123,12 +128,13 @@ Format:
 
 ### Error
 
-Sent by: TestRunner
+Sent by: TestRunner  
 Purpose: Tell controller that a test runner had some sort of internal
          error that was *not* related to running the task (e.g. couldn't
          read a file due to bad permissions, received a malformed/unparseable
-         message, etc.)
-Format:
+         message, etc.)  
+Format:  
+
    * TaskID: 32 bytes => Task the test runner was trying to execute when
                          the error occured
    * Error code: 1 byte => Protocol error code
@@ -138,7 +144,8 @@ Format:
 
 ## Detailed Protocol Description
 
-Definitions:
+Definitions:  
+
    * TIMEOUT: the number of seconds the controller will wait before deciding
               a test runner is down
    * RESPONSEMAX: the number of seconds the controller will wait before
@@ -169,7 +176,8 @@ Definitions:
       * Send a Result message to the controller
       * Discard the task
 
-**Controller**:
+**Controller**:  
+
    * Read all test case files
    * For every test case of type Availability:
       * For each push task *t* in each availability test:
@@ -209,7 +217,8 @@ Test runners are stateless. They don't know when a protocol execution is
 taking place, and they don't make any decisions. They simply listen for
 instructions from the controller.
 
-When a TestRunner receives a RunTask message for a task *t*:
+When a TestRunner receives a RunTask message for a task *t*:  
+
    * Store Delay seconds
    * If it has a cached copy of the task:
       * Wait for Delay seconds
