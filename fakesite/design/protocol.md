@@ -74,8 +74,8 @@ A message header has the following fields:
 
 
 | `Type` | `TaskID` | `Payload Length` |
-| :----: | :------:   :--------------: |
-| 1 byte | 2 bytes |  32 bytes |
+|:------:|:--------:|:----------------:|
+| 1 byte | 2 bytes  |  32 bytes        |
 
 Where `Type` specifies the payload type and can be any of the following:
 
