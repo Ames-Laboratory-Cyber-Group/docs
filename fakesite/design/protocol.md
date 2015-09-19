@@ -74,6 +74,10 @@ A message header has the following fields:
    * Type: 1 byte => identifies the type of message this is
    * Payload Length: 2 bytes => Length, in bytes, of the message payload
 
+
+| Type | Payload Length |
+| ---- | -------------- |
+
 The following types of message payloads are currently used:
 
 ### RunTask Message
@@ -117,9 +121,9 @@ Format:
 
 ### Result
 
-Sent by: TestRunner  
-Purpose: Tell controller the results of a task  
-Format:  
+_Sent by_: TestRunner  
+_Purpose_: Tell controller the results of a task  
+_Format_:  
 
    * TaskID: 32 bytes => UUID of the task being run
    * StartTime: 8 bytes => timestamp when task run began
@@ -146,70 +150,102 @@ Format:
 
 Definitions:  
 
-   * TIMEOUT: the number of seconds the controller will wait before deciding
-              a test runner is down
-   * RESPONSEMAX: the number of seconds the controller will wait before
-                  deciding that a task has failed
-   * Available site: a site not marked as down during the Availability
-                     testing phase
-   * fn RunTask (task t) => executed by controller:
-      * Send a RunTask message to the specified site
-         * If the response is a RunningTask message:
-            * wait for a Result message
-         * If the response is a SendTask message:
-            * serialize the task and send to the test runner
-               * If the response is an Error message:
-                  * mark the task as failed due to an internal testing error
-               * If the response is a RunningTask message:
-                  * wait for a Result message
-               * If there is no response in TIMEOUT seconds, mark the node
-                 as down
-         * If the response is an Error message:
-            * mark the task as failed due to an internal testing error
-         * If there is no response in TIMEOUT seconds, mark the node
+**TIMEOUT**: the number of seconds the controller will wait before deciding
+             a test runner is down  
+**RESPONSEMAX**: the number of seconds the controller will wait before
+                 deciding that a task has failed  
+**Available site**: a site not marked as down during the Availability
+                    testing phase  
+
+
+Some useful functions:
+
+```
+fn RunTask (task t):
+    => Send a RunTask message to the specified site
+        => If the response is a RunningTask message:
+            => Wait for a Result message
+        => If the response is a SendTask message:
+            => Serialize the task and send to the test runner
+                => If the response is an Error message:
+                    => Mark the task as failed due to an internal testing error
+            => If the response is a RunningTask message:
+                => Wait for a Result message
+            => If there is no response in TIMEOUT seconds, mark the node
+               as down
+        => If the response is an Error message:
+            => mark the task as failed due to an internal testing error
+        => If there is no response in TIMEOUT seconds, mark the node
            as down
-   * fn RunnerTask (task t) => executed by the test runner:
-      * Store the current timestamp
-      * Send a RunningTask message to the controller
-      * Execute the task
-      * Store the timestamp when the task finishes
-      * Send a Result message to the controller
-      * Discard the task
+
+
+fn RunnerTask (task t):
+    => Store the current timestamp
+    => Send a RunningTask message to the controller
+    => Execute the task
+    => Store the timestamp when the task finishes
+    => Send a Result message to the controller
+    => Discard the task
+```
 
 **Controller**:  
 
-   * Read all test case files
-   * For every test case of type Availability:
-      * For each push task *t* in each availability test:
-         * execute RunTask(t)
-      * **Wait** for all availability push tasks to complete:
-         * If RESPONSE_MAX seconds pass without a received Result message,
+The core controller operations of a protocol execution (test run):
+```
+Phase 1 (Availability):
+
+=> Read all test case files
+=> For every test case of type Availability:
+    => For each push task *t* in each availability test:
+        => execute RunTask(t)
+    => Wait for all availability push tasks to complete:
+        => If RESPONSE_MAX seconds pass without a received Result message,
            mark the task as a failure and mark the node as down
-         * When a Result message is received:
-            * Record the result
-            * If the result is a failure:
-               * mark the node as down
-      * For all pull tasks t:
-         * For all available sites:
-            * execute RunTask(t)
-               * If an Error is received:
-                  * mark the task as failed due to an internal testing error
-               * If the task fails:
-                  * mark the node as down and record the failure
-               * If there is no response in RESPONSEMAX seconds, mark the
-                 node as down and record the failure
-               * If success is received, record result
-   * For all available sites:
-      * For all remaining test cases:
-         * For all push tasks t:
-            * execute RunTask(t)
-         * When **any** push task result is received:
-            * If the result is a success:
-               * Immediately execute RunTask(t) for *all* pull tasks remaining
-                 in the test case
-            * If the result is a failure:
-               * Mark as a failure and discard pull tasks
-   * Aggregate results and push to logging/alerting server
+    => When a Result message is received:
+        => Record the result
+        => If the result is a failure:
+            => Mark the node as down
+    => For all pull tasks t:
+        => For all available sites:
+            => Execute RunTask(t)
+                => If an Error message is received:
+                    => Mark the task as failed due to an internal testing error
+                => If the task fails (Result failure received):
+                    => Mark the node as down and record the failure
+            => If there is no response in RESPONSEMAX seconds, mark the
+               node as down and record the failure
+            => If success Result is received, record result
+
+Phase 2:
+
+=> For all available sites:
+    => For all remaining test cases:
+        => For all push tasks t:
+            => Execute RunTask(t)
+            => If RESPONSEMAX seconds pass without a response:
+                => Mark the task as failed
+                => Cancel all pull tasks for this test case
+                => Ignore any Result messages for this task
+        => When any push task result is received:
+            => If the result is a success:
+                => Immediately execute RunTask(t) for all pull tasks remaining
+                   in the test case
+                    => For each pull task result:
+                        => Record result
+                => If RESPONSEMAX seconds pass without a Result message for
+                   a given pull task:
+                    => Mark the task as a failure
+                    => Ignore any later Result message for this task
+            => If the push task result is a failure:
+                => Mark as a failure
+                => Discard pull tasks for this test case
+
+Phase 3:
+
+=> Aggregate results
+=> Transform into final output format
+=> Push results to logging/alerting server
+```
 
 **Test Runner**
 
@@ -218,23 +254,28 @@ taking place, and they don't make any decisions. They simply listen for
 instructions from the controller.
 
 When a TestRunner receives a RunTask message for a task *t*:  
-
-   * Store Delay seconds
-   * If it has a cached copy of the task:
-      * Wait for Delay seconds
-      * execute RunnerTask(t)
-   * If it does not have a cached copy
-      * Send a SendTask message to the controller
-      * When a TestData test is received:
-         * If it cannot parse the task
-            * Sends an Error message to the controller and discard
-              the pending task
-         * If it parses correctly:
-            * Cache t
-            * Wait for Delay seconds
-            * execute RunnerTask(t)
-      * If a response is not received within RESPONSEMAX seconds, discard
-        the pending task
+A TestRunner performs the following actions when it receives a RunTask
+message for some task *t*:
+```
+=> Store 'Delay' seconds from RunTask message
+=> If there is a cached copy of t
+    => Wait for 'Delay' seconds
+    => Execute RunnerTask(t)
+=> If there is no cached copy of t
+    => Send a SendTask message to the controller
+    => If a TaskData message is received:
+        => If task cannot be parsed
+            => Send an Error message to the controller and discard
+               the pending task
+        => If task parses correctly:
+            => Cache t
+            => Wait for 'Delay' seconds
+            => Execute RunnerTask(t)
+    => If any other message is received:
+        => Discard the pending task and any associated state
+    => If a response is not received within RESPONSEMAX seconds, discard
+       the pending task
+```
 
 ## Security
 
@@ -274,3 +315,9 @@ When implemented in OpenSSL, this should be upgraded to:
 #### DH Params
 
 Each site should use a randomly generated 4096 bit dh param value.
+
+## Questions
+
+1. After a pull for a given timestamp, should unrequested messages be
+cached to avoid potentially redownloading the same messages multiple times
+per protocol execution? (probably, just needs to be done smartly)
