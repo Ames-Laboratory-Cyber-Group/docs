@@ -75,9 +75,11 @@ A message header has the following fields:
 
 | `Type` | `TaskID` | `Payload Length` |
 |:------:|:--------:|:----------------:|
-| 1 byte | 2 bytes  |  32 bytes        |
+| 1 byte | 32 bytes |  2 bytes         |
 
-Where `Type` specifies the payload type and can be any of the following:
+Where `TaskID` is a UUID for each task, `Payload Length` specifies the
+length of the message payload, and `Type` specifies the type of payload,
+which can be any of the following:
 
 #### RunTask Message
 
@@ -85,11 +87,15 @@ Where `Type` specifies the payload type and can be any of the following:
 **Purpose**: Signal a test runner to run a particular task  
 **Format**:  
 
-   * TaskID: 32 bytes => UUID of the task to run
-   * Timestamp: 8 bytes => the "new since" time to request data from server
-                           (zeroed and ignored in push tasks)
-   * Delay: 2 bytes => how long, in seconds, to wait before running test
-                       (can be zero)
+| `Timestamp` | `Delay` |
+|:-----------:|:-------:|
+| 8 bytes     | 32 bytes |
+| The "new since" time used to request data from server (zeroed and ignored in push tasks) | How long, in seconds, to wait before running this task
+
+//* Timestamp: 8 bytes => the "new since" time to request data from server
+//                          (zeroed and ignored in push tasks)
+//   * Delay: 2 bytes => how long, in seconds, to wait before running test
+//                       (can be zero)
 
 ### RunningTask Message
 
