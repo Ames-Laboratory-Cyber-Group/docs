@@ -36,7 +36,7 @@ controllers.
 Test cases are declaratively specified and contain both required test inputs,
 expected outputs, and associated test metadata.
 
-### (Tentative) Test Case Format
+### Test Case Format (Tentative)
 
 Note: this format was made with little to no knowledge of what CFM protocol
 messages look like and may need to be revised, possibly heavily.
@@ -73,13 +73,22 @@ a header and a payload.
 A message header has the following fields:
 
 
-| `Type` | `TaskID` | `Payload Length` |
+| `Type Code` | `TaskID` | `Payload Length` |
 |:------:|:--------:|:----------------:|
 | 1 byte | 32 bytes |  2 bytes         |
+| Type of message payload | UUID for task | Length of this message payload |
 
-Where `TaskID` is a UUID for each task, `Payload Length` specifies the
-length of the message payload, and `Type` specifies the type of payload,
-which can be any of the following:
+The following `Type Code`s of payloads are currently recognized:
+
+| `Type Code` | Payload Type |
+|:-----------:|:------------:|
+| 0 | RunTask |
+| 1 | RunningTask |
+| 2 | SendTask |
+| 3 | TaskData |
+| 4 | Result |
+| 5 | Error |
+
 
 #### RunTask Message
 
@@ -89,51 +98,45 @@ which can be any of the following:
 
 | `Timestamp` | `Delay` |
 |:-----------:|:-------:|
-| 8 bytes     | 32 bytes |
-| The "new since" time used to request data from server (zeroed and ignored in push tasks) | How long, in seconds, to wait before running this task
-
-//* Timestamp: 8 bytes => the "new since" time to request data from server
-//                          (zeroed and ignored in push tasks)
-//   * Delay: 2 bytes => how long, in seconds, to wait before running test
-//                       (can be zero)
+| 8 bytes     | 2 bytes |
+| The "new since" time used to <br>request data from server <br>(zeroed and ignored in push tasks) | How long, in seconds, <br>to wait before running this task
 
 ### RunningTask Message
 
-Sent by: TestRunner  
-Purpose: Tell controller that a particular task is being run  
-Format:  
-
-   * TaskID: 32 bytes => UUID of the task being run
+**Sent by**: TestRunner  
+**Purpose**: Tell controller that a particular task is being run  
+**Format**: No payload
 
 ### SendTask Message
 
-Sent by: TestRunner  
-Purpose: Tell controller that test runner does not know about the
-         requested task and the controller should send the task data.  
-Format:  
-
-   * TaskID: 32 bytes => UUID of the test being run
+**Sent by**: TestRunner  
+**Purpose**: Tell controller that test runner does not know about the
+             requested task and the controller should send the task data.  
+**Format**: No payload  
 
 ### TaskData
 
-Sent by: Controller  
-Purpose: Tell a test runner that doesn't know about this task yet what
-         the task actually is  
-Format:  
+**Sent by**: Controller  
+**Purpose**: Tell a test runner that doesn't know about this task yet what
+             the task actually is  
+**Format**:  
 
-   * TaskID: 32 bytes => UUID of the task being run
-   * TaskData: N bytes => Serialized Task
+| `TaskData` |
+|:-----------:|
+| `Payload Length` bytes |
+| The serialized task |
 
 ### Result
 
-_Sent by_: TestRunner  
-_Purpose_: Tell controller the results of a task  
-_Format_:  
+**Sent by**: TestRunner  
+**Purpose**: Tell controller the results of a task  
+**Format**:  
 
-   * TaskID: 32 bytes => UUID of the task being run
-   * StartTime: 8 bytes => timestamp when task run began
-   * EndTime: 8 bytes => timestamp when task run finished
-   * ResultData: M bytes => Serialized Result
+| `StartTime` | `EndTime` | `Result` |
+|:-----------:|:---------:|:--------:|
+| 8 bytes | 8 bytes | (`Payload Length` - 16 bytes) bytes |
+| Timestamp when task began | Timestamp when task finished | Serialized Result |
+
 
 ### Error
 
@@ -144,11 +147,17 @@ Purpose: Tell controller that a test runner had some sort of internal
          message, etc.)  
 Format:  
 
-   * TaskID: 32 bytes => Task the test runner was trying to execute when
-                         the error occured
-   * Error code: 1 byte => Protocol error code
-   * Message: Y bytes => human-readable string containing additional
-                         info about the error (e.g. string from an exception)
+| `Error Code` | `Error Info` |
+|:------------:|:------------:|
+| 1 byte | (`Payload Length` - 1) bytes |
+| Protocol error code | Human readable string with additional<br>error info (e.g. exception string) |
+
+Recognized Error Codes:
+
+| `Error Code` | Meaning |
+|:------------:|:-------:|
+| 0 | Message parsing error |
+| 1 | Unrecognized message type |
 
 
 ## Detailed Protocol Description
