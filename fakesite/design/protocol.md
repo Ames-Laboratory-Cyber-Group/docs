@@ -301,22 +301,18 @@ All controller--testrunner communication must be done over TLS.
 
 The controller and test runners must exclusively use TLS 1.2.
 
-#### Certificate Authorities
-
-A certificate authority should be created to issue and sign
-certificates used by test runners and the controller.
-
 #### Authentication
 
-The controller must present a valid client certificate when connecting to
-a test runner.
+The controller **must** present a valid client certificate when connecting to
+a test runner. (NB: in-house CA is preferable.) The controller *should* use
+certificate pinning to associate persistent public keys with individual test runners.
 
 Test runners **must** drop all connections not authenticated by a client
 certificate.
 
-The controller and the test runners **must** only trust certificates
-signed by the in-house certificate authority and **must** ignore certificates
-from any other CA, including the operating system's trust store.
+If in in-house CA is used, the controller and the test runners **must** only trust
+certificates signed by the in-house certificate authority and **must** ignore
+certificates from any other CA, including the operating system's trust store.
 
 #### Ciphersuites
 
