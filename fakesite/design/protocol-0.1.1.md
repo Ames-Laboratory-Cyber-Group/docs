@@ -14,6 +14,8 @@ Fakesite Protocol Revision 0.1.1
 
 ### <a name="FSController"></a> FSController
 
+**Inherits From**: Object
+
 **Purpose**: There is exactly one FSController instance. The FSController has the following responsibilities:
 
 * daemonize
@@ -29,7 +31,7 @@ Fakesite Protocol Revision 0.1.1
 
 **Purpose**: A TestCase is a collection of atomic [Tasks](#Task) that has the following responsibilities:
 
-* enforce [testcase task constraints](#testcase_contraints)
+* enforce [test case task constraints](#testcase_contraints)
 * instantiate and run [Tasks](#Task) in the correct order
 * aggregate the [TaskResults](#TaskResult) into a [TestCaseResult](#TestCaseResult)
 
@@ -39,6 +41,8 @@ Fakesite Protocol Revision 0.1.1
 
 #### <a name="AvailabilityTestCase"></a> AvailabilityTestCase
 
+**Inherits From**: [TestCase](#TestCase)
+
 **Purpose**: 
 
 **Fields**
@@ -47,6 +51,8 @@ Fakesite Protocol Revision 0.1.1
 
 #### <a name="ComplianceTestCase"></a> ComplianceTestCase
 
+**Inherits From**: [TestCase](#TestCase)
+
 **Purpose**:
 
 **Fields**
@@ -54,6 +60,8 @@ Fakesite Protocol Revision 0.1.1
 **Methods**
 
 #### <a name="IntegrityTestCase"></a> IntegrityTestCase
+
+**Inherits From**: [TestCase](#TestCase)
 
 **Purpose**:
 
@@ -71,6 +79,8 @@ Fakesite Protocol Revision 0.1.1
 
 #### <a name="PushTask"></a> PushTask
 
+**Inherits From**: [Task](#Task)
+
 **Purpose**:
 
 **Fields**
@@ -78,6 +88,16 @@ Fakesite Protocol Revision 0.1.1
 **Methods**
 
 #### <a name="PullTask"></a> PullTask
+
+**Inherits From**: [Task](#Task)
+
+**Purpose**:
+
+**Fields**
+
+**Methods**
+
+### <a name="Result"></a> Result
 
 **Purpose**:
 
@@ -87,6 +107,8 @@ Fakesite Protocol Revision 0.1.1
 
 ### <a name="TaskResult"></a> TaskResult
 
+**Inherits From**: [Result](#Result)
+
 **Purpose**:
 
 **Fields**
@@ -94,6 +116,8 @@ Fakesite Protocol Revision 0.1.1
 **Methods**
 
 ### <a name="TestCaseResult"></a> TestCaseResult
+
+**Inherits From**: [Result](#Result)
 
 **Purpose**:
 
