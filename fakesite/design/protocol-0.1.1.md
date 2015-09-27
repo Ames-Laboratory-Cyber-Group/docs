@@ -10,6 +10,37 @@ Fakesite Protocol Revision 0.1.1
 * Test cases are no longer declaratively specified. They are instead
   written as Python classes.
 
+## 0.1.1 Sample Execution
+
+Pseudocode for a sample protocol execution:
+
+```
+FSController:
+  create logger
+  create cache
+  run availability tests
+  log results
+  filter remaining tests to remove tests that use a site that failed an availability test
+  run surviving tests
+  log results
+  
+Every TestCase:
+  check constraints
+  run push task
+  if push task fails, format and return a failed TestCaseResult
+  else run all pull tasks
+  aggregate results and return a TestCaseResult
+  
+Every Task:
+  Execute when started (return failure if we timeout)
+  Map server response to TaskResult using FSIO.equals() and return
+  
+  PullTask caching ops:
+    First try cache.get()
+    If that fails, pull result
+    call cache.put() with result
+```
+
 ## Classes
 
 ### <a name="FSController"></a> FSController
@@ -26,7 +57,7 @@ Fakesite Protocol Revision 0.1.1
 
 |Name|Purpose|Arguments|Return Value|
 |:---|:------|:-------:|:-----------|
-| runTests | Execute all known tests | - | defer.Deferred({[TestCase](#TestCase): [TestCaseResult](#TestCaseResult)}) |
+| runTests | Execute all known tests | - | defer.DeferredList([TestCaseResult](#TestCaseResult)) |
 | runTest | Execute the specified test | [TestCase](#TestCase) | defer.Deferred([TestCaseResult](#TestCaseResult)) |
 
 ### <a name="TestCase"></a> TestCase
@@ -154,7 +185,7 @@ Fakesite Protocol Revision 0.1.1
 
 |Name|Purpose|Arguments|Return Value|
 |:---|:------|:-------:|:-----------|
-| make | Construct an FSIO from raw data | raw | - |
+| make | Construct an FSIO from raw data | raw | [FSIO](#FSIO) |
 | equals | Test for equality with another FSIO | other, semantic_eq=False | bool |
 
 ### <a name="FSIOCache"> FSIOCache
@@ -171,7 +202,7 @@ Fakesite Protocol Revision 0.1.1
 
 |Name|Purpose|Arguments|Return Value|
 |:---|:------|:-------:|:-----------|
-| get | Get a cahced FSIO | UUID | [FSIO](#FSIO) |
+| get | Get a cached FSIO | UUID | [FSIO](#FSIO) |
 | put | Cache an FSIO | - | - |
 
 ### <a name="FSLogger"></a> FSLogger
@@ -190,33 +221,9 @@ Fakesite Protocol Revision 0.1.1
 |:---|:------|:-------:|:-----------|
 | log | Log a formatted test case result to endpoint | [TestCaseResult](#TestCaseResult) | - |
 
-## Sample Execution
+## <a name="testcase_constraints"></a> TestCase Constraints
 
-Pseudocode for a sample protocol execution:
+The following constraints are imposed on test cases:
 
-```
-FSController:
-  create logger
-  create cache
-  run availability tests
-  log results
-  filter remaining tests to remove tests that use a site that failed an availability test
-  run surviving tests
-  log results
-  
-Every TestCase:
-  check constraints
-  run push task
-  if push task fails, format and return a failed TestCaseResult
-  else run all pull tasks
-  aggregate results and return a TestCaseResult
-  
-Every Task:
-  Execute when started (return failure if we timeout)
-  Map server response to TaskResult using FSIO.equals() and return
-  
-  PullTask caching ops:
-    First try cache.get()
-    If that fails, pull result
-    call cache.put() with result
-```
+1. There must be exactly 1 push task
+2. A particular site can execute at most 1 pull task
