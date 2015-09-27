@@ -65,7 +65,7 @@ Every Task:
 
 **Purpose**: A TestCase is a collection of atomic [Tasks](#Task) that has the following responsibilities:
 
-* enforce [test case task constraints](#testcase_contraints)
+* enforce [test case task constraints](#testcase_constraints)
 * instantiate and run [Tasks](#Task) in the correct order
 * aggregate the [TaskResults](#TaskResult) into a [TestCaseResult](#TestCaseResult)
 
