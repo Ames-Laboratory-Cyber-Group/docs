@@ -9,6 +9,7 @@ Fakesite Protocol Revision 0.1.1
   CFM servers and the logging server
 * Test cases are no longer declaratively specified. They are instead
   written as Python classes.
+* A new object, [FSIO](#FSIO), wraps protocol inputs/outputs to handle potentially necessary semantic equivalency checks in addition to naive strcmp
 
 ## 0.1.1 Sample Execution
 
