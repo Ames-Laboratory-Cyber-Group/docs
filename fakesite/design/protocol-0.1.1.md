@@ -54,7 +54,7 @@ Fakesite Protocol Revision 0.1.1
 
 ### <a name="Task"></a> Task
 
-**Purpose**:
+**Purpose**: Describe a particular Task, the base component of test cases. A Task knows how to execute itself and how to make a [TaskResult](#TaskResult) describing the result of execution.
 
 **Fields**
 
@@ -64,7 +64,7 @@ Fakesite Protocol Revision 0.1.1
 | input | [FSIO](#FSIO) | Input from task -> CFM server |
 | expected_output | [FSIO](#FSIO) | Expected output from CFM server |
 
-**Methods**
+**Public Methods**
 
 |Name|Purpose|Arguments|Return Value|
 |:---|:------|:-------:|:-----------|
@@ -76,26 +76,17 @@ Fakesite Protocol Revision 0.1.1
 
 **Inherits From**: [Task](#Task)
 
-**Purpose**:
-
-**Fields**
-
-**Public Methods**
-
+**Purpose**: Execute a given push task
 
 #### <a name="PullTask"></a> PullTask
 
 **Inherits From**: [Task](#Task)
 
-**Purpose**:
-
-**Fields**
-
-**Methods**
+**Purpose**: Execute a given pull task
 
 ### <a name="TaskResult"></a> TaskResult
 
-**Purpose**:
+**Purpose**: Describe the result of a [Task](#Task)
 
 **Fields**
 
@@ -103,6 +94,12 @@ Fakesite Protocol Revision 0.1.1
 |:---|:---|:----------|
 | started | int | timestamp when this {task|test} began |
 | finished | int | timestamp when this {task|test} finished |
+| payload_size | int | size, in bytes, of the payload for this task |
+| site | [Site](#Site) | site that executed this task |
+| code | int | HTTP code returned |
+| desc | str | human-readable string describing result |
+| UUID | int | UUID for task this result describes |
+| result | enum | Describe actual result (e.g pass/fail/timeout/err) |
 
 **Methods**
 
@@ -112,7 +109,7 @@ Fakesite Protocol Revision 0.1.1
 
 ### <a name="TestCaseResult"></a> TestCaseResult
 
-**Purpose**:
+**Purpose**: Describe the result of a [TestCase](#TestCase)
 
 **Fields**
 
@@ -120,6 +117,8 @@ Fakesite Protocol Revision 0.1.1
 |:---|:---|:----------|
 | started | int | timestamp when this {task|test} began |
 | finished | int | timestamp when this {task|test} finished |
+| UUID | int | UUID of the test case this result describes |
+| result | enum | Describe the result of this test case (e.g. pass/fail/timeout/err/partial) |
 
 **Methods**
 
@@ -129,32 +128,64 @@ Fakesite Protocol Revision 0.1.1
 
 ### <a name="Site"></a>Site
 
-**Purpose**:
+**Purpose**: Describe a particular site
 
 **Fields**
 
-**Methods**
+|Name|Type|Description|
+|:---|:---|:----------|
+| name | str | this site's name |
+| gpg_keypair | ? | keypair for this site |
+| uname | str | username this site uses |
+| passwd | str | passwd this site uses |
 
 ### <a name="FSIO"></a> FSIO
 
-**Purpose**:
+**Purpose**: Describe a discrete block of FakeSite IO
 
 **Fields**
 
+|Name|Type|Description|
+|:---|:---|:----------|
+| raw | str | the raw input used to create this FSIO |
+| UUID | int | UUID for this FSIO |
+
 **Methods**
+
+|Name|Purpose|Arguments|Return Value|
+|:---|:------|:-------:|:-----------|
+| make | Construct an FSIO from raw data | raw | - |
+| equals | Test for equality with another FSIO | other, semantic_eq=False | bool |
 
 ### <a name="FSIOCache"> FSIOCache
 
-**Purpose**:
+**Purpose**: Cache FSIO objects
 
 **Fields**
 
-**Methods**
+|Name|Type|Description|
+|:---|:---|:----------|
+| max_size | int | Upper bound on cache size|
+
+**Public Methods**
+
+|Name|Purpose|Arguments|Return Value|
+|:---|:------|:-------:|:-----------|
+| get | Get a cahced FSIO | UUID | [FSIO](#FSIO) |
+| put | Cache an FSIO | - | - |
 
 ### <a name="FSLogger"></a> FSLogger
 
-**Purpose**:
+**Purpose**: Log a [TestCaseResult](#TestCaseResult) to a specific logging endpoint
 
 **Fields**
 
+|Name|Type|Description|
+|:---|:---|:----------|
+| endpoint | namedtuple | location of the remote logging endpoint |
+
 **Methods**
+
+|Name|Purpose|Arguments|Return Value|
+|:---|:------|:-------:|:-----------|
+| log | Log a formatted test case result to endpoint | [TestCaseResult](#TestCaseResult) | - |
