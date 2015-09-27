@@ -28,7 +28,6 @@ Fakesite Protocol Revision 0.1.1
 |:---|:------|:-------:|:-----------|
 | runTests | Execute all known tests | - | defer.Deferred({[TestCase](#TestCase): [TestCaseResult](#TestCaseResult)}) |
 | runTest | Execute the specified test | [TestCase](#TestCase) | defer.Deferred([TestCaseResult](#TestCaseResult)) |
-| logResults | Log test results | {[TestCase](#TestCase): [TestCaseResult](#TestCaseResult)} | - |
 
 ### <a name="TestCase"></a> TestCase
 
@@ -149,6 +148,7 @@ Fakesite Protocol Revision 0.1.1
 |:---|:---|:----------|
 | raw | str | the raw input used to create this FSIO |
 | UUID | int | UUID for this FSIO |
+| code | int | HTTP status code |
 
 **Methods**
 
@@ -189,3 +189,34 @@ Fakesite Protocol Revision 0.1.1
 |Name|Purpose|Arguments|Return Value|
 |:---|:------|:-------:|:-----------|
 | log | Log a formatted test case result to endpoint | [TestCaseResult](#TestCaseResult) | - |
+
+## Sample Execution
+
+Pseudocode for a sample protocol execution:
+
+```
+FSController:
+  create logger
+  create cache
+  run availability tests
+  log results
+  filter remaining tests to remove tests that use a site that failed an availability test
+  run surviving tests
+  log results
+  
+Every TestCase:
+  check constraints
+  run push task
+  if push task fails, format and return a failed TestCaseResult
+  else run all pull tasks
+  aggregate results and return a TestCaseResult
+  
+Every Task:
+  Execute when started (return failure if we timeout)
+  Map server response to TaskResult using FSIO.equals() and return
+  
+  PullTask caching ops:
+    First try cache.get()
+    If that fails, pull result
+    call cache.put() with result
+```
