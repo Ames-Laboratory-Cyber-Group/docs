@@ -14,18 +14,21 @@ Fakesite Protocol Revision 0.1.1
 
 ### <a name="FSController"></a> FSController
 
-**Inherits From**: Object
-
 **Purpose**: There is exactly one FSController instance. The FSController has the following responsibilities:
 
-* daemonize
 * instantiate and run [TestCases](#TestCase)
 * instantiate an [FSLogger](#FSLogger)
 * instantiate an [FSIOCache](#FSIOCache)
 
 **Fields**
 
-**Methods**
+**Public Methods**
+
+|Name|Purpose|Arguments|Return Value|
+|:---|:------|:-------:|:-----------|
+| runTests | Execute all known tests | - | defer.Deferred({[TestCase](#TestCase): [TestCaseResult](#TestCaseResult)}) |
+| runTest | Execute the specified test | [TestCase](#TestCase) | defer.Deferred([TestCaseResult](#TestCaseResult)) |
+| logResults | Log test results | {[TestCase](#TestCase): [TestCaseResult](#TestCaseResult)} | - |
 
 ### <a name="TestCase"></a> TestCase
 
@@ -37,37 +40,17 @@ Fakesite Protocol Revision 0.1.1
 
 **Fields**
 
-**Methods**
+|Name|Type|Description|
+|:---|:---|:----------|
+| tasks | list | a list of the tasks that make up this test case |
 
-#### <a name="AvailabilityTestCase"></a> AvailabilityTestCase
+**Public Methods**
 
-**Inherits From**: [TestCase](#TestCase)
+|Name|Purpose|Arguments|Return Value|
+|:---|:------|:-------:|:-----------|
+| start | Execute the test case | - | defer.Deferred([TestCaseResult](#TestCaseResult)) |
+| stop | Stop the test case execution | - | - |
 
-**Purpose**: 
-
-**Fields**
-
-**Methods**
-
-#### <a name="ComplianceTestCase"></a> ComplianceTestCase
-
-**Inherits From**: [TestCase](#TestCase)
-
-**Purpose**:
-
-**Fields**
-
-**Methods**
-
-#### <a name="IntegrityTestCase"></a> IntegrityTestCase
-
-**Inherits From**: [TestCase](#TestCase)
-
-**Purpose**:
-
-**Fields**
-
-**Methods**
 
 ### <a name="Task"></a> Task
 
@@ -75,7 +58,19 @@ Fakesite Protocol Revision 0.1.1
 
 **Fields**
 
+|Name|Type|Description|
+|:---|:---|:----------|
+| site | [Site](#Site) | The site this task executes as |
+| input | [FSIO](#FSIO) | Input from task -> CFM server |
+| expected_output | [FSIO](#FSIO) | Expected output from CFM server |
+
 **Methods**
+
+|Name|Purpose|Arguments|Return Value|
+|:---|:------|:-------:|:-----------|
+| start | Execute the task | - | defer.Deferred([TaskResult](#TaskResult)) |
+| stop | Stop the currently executing task | - | - |
+
 
 #### <a name="PushTask"></a> PushTask
 
@@ -85,7 +80,8 @@ Fakesite Protocol Revision 0.1.1
 
 **Fields**
 
-**Methods**
+**Public Methods**
+
 
 #### <a name="PullTask"></a> PullTask
 
@@ -97,33 +93,39 @@ Fakesite Protocol Revision 0.1.1
 
 **Methods**
 
-### <a name="Result"></a> Result
-
-**Purpose**:
-
-**Fields**
-
-**Methods**
-
 ### <a name="TaskResult"></a> TaskResult
 
-**Inherits From**: [Result](#Result)
-
 **Purpose**:
 
 **Fields**
 
+|Name|Type|Description|
+|:---|:---|:----------|
+| started | int | timestamp when this {task|test} began |
+| finished | int | timestamp when this {task|test} finished |
+
 **Methods**
+
+|Name|Purpose|Arguments|Return Value|
+|:---|:------|:-------:|:-----------|
+| toSplunkFormat | return this task result formatted for a splunk log | - | str |
 
 ### <a name="TestCaseResult"></a> TestCaseResult
 
-**Inherits From**: [Result](#Result)
-
 **Purpose**:
 
 **Fields**
 
+|Name|Type|Description|
+|:---|:---|:----------|
+| started | int | timestamp when this {task|test} began |
+| finished | int | timestamp when this {task|test} finished |
+
 **Methods**
+
+|Name|Purpose|Arguments|Return Value|
+|:---|:------|:-------:|:-----------|
+| toSplunkFormat | return this test case result formatted for a splunk log | - | str |
 
 ### <a name="Site"></a>Site
 
