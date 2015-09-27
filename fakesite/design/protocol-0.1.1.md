@@ -122,8 +122,8 @@ Every Task:
 
 |Name|Type|Description|
 |:---|:---|:----------|
-| started | int | timestamp when this {task|test} began |
-| finished | int | timestamp when this {task|test} finished |
+| started | int | timestamp when this task began |
+| finished | int | timestamp when this task finished |
 | payload_size | int | size, in bytes, of the payload for this task |
 | site | [Site](#Site) | site that executed this task |
 | code | int | HTTP code returned |
@@ -131,7 +131,7 @@ Every Task:
 | UUID | int | UUID for task this result describes |
 | result | enum | Describe actual result (e.g pass/fail/timeout/err) |
 
-**Methods**
+**Public Methods**
 
 |Name|Purpose|Arguments|Return Value|
 |:---|:------|:-------:|:-----------|
@@ -150,7 +150,7 @@ Every Task:
 | UUID | int | UUID of the test case this result describes |
 | result | enum | Describe the result of this test case (e.g. pass/fail/timeout/err/partial) |
 
-**Methods**
+**Public Methods**
 
 |Name|Purpose|Arguments|Return Value|
 |:---|:------|:-------:|:-----------|
@@ -181,7 +181,7 @@ Every Task:
 | UUID | int | UUID for this FSIO |
 | code | int | HTTP status code |
 
-**Methods**
+**Public Methods**
 
 |Name|Purpose|Arguments|Return Value|
 |:---|:------|:-------:|:-----------|
