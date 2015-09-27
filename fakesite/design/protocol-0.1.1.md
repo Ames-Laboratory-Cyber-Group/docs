@@ -37,8 +37,8 @@ Every Task:
   
   PullTask caching ops:
     First try cache.get()
-    If that fails, pull result
-    call cache.put() with result
+    If that fails, pull FSIO from timestamp
+    call cache.put() with resulting FSIO(s) (if successful)
 ```
 
 ## Classes
